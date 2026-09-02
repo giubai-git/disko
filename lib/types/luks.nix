@@ -392,6 +392,7 @@ in
           pkgs.gnugrep
           pkgs.openssl
           pkgs.systemd
+          pkgs.tpm2-tools
           # We make cryptsetup aware of token libraries from systemd.
           # We do not have a lot of nice ways to do this...
           (pkgs.runCommand pkgs.cryptsetup.name
