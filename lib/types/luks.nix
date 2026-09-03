@@ -154,7 +154,7 @@ in
     enrollRecovery = lib.mkOption {
       type = lib.types.bool;
       default = config.enrollFido2 || config.enrollTpm2;
-      defaultText = "true if fido2 is enabled";
+      defaultText = "true if fido2 or tpm2 is enabled";
       description = "Whether to enroll an automatic (keyboard layout independent) recovery passphrase with high entropy and print a QR code on screen to take it";
     };
     settings = lib.mkOption {
