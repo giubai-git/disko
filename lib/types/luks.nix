@@ -317,7 +317,7 @@ in
           if ! systemd-cryptenroll "${config.device}" 2>/dev/null | grep -qw tpm2; then
             systemd-cryptenroll \
               --tpm2-device=auto \
-              ''${SLOT_ZERO_TO_DELETE:+--wipe-slot=0} \
+              --wipe-slot=tpm2 \
               --unlock-key-file=${formatKeyFile} \
               ${toString config.extraTpm2EnrollArgs} \
               "${config.device}"
