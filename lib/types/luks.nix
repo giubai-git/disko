@@ -147,7 +147,7 @@ in
       type = lib.types.listOf lib.types.str;
       default = [ "--tpm2-pcrs=7" ];
       example = [
-        "--tpm2-pcrs=0+7+15:sha256=0000000000000000000000000000000000000000000000000000000000000000"
+        "--tpm2-pcrs=0+7+15"
       ];
       description = "Extra arguments to pass to `systemd-cryptenroll` when enrolling the TPM2 device";
     };
@@ -317,7 +317,7 @@ in
           if ! systemd-cryptenroll "${config.device}" 2>/dev/null | grep -qw tpm2; then
             systemd-cryptenroll \
               --tpm2-device=auto \
-              --wipe-slot=tpm2 \
+              --wipe-slot=''${SLOT_ZERO_TO_DELETE:+0,}tpm2 \
               --unlock-key-file=${formatKeyFile} \
               ${toString config.extraTpm2EnrollArgs} \
               "${config.device}"
@@ -377,6 +377,33 @@ in
             # If FIDO2 is used, systemd stage 1 is absolutely necessary.
             # Should we turn this into an assertion?
             boot.initrd.systemd.enable = lib.mkIf (config.enrollFido2 || config.enrollTpm2) true;
+          }
+        ])
+        ++ (lib.optional config.enrollTpm2 [
+          {
+            systemd.services."disko-tpm2-enroll-${config.name}" = {
+              description = "Finalize TPM2 unlock key for ${config.name}";
+              after = ["tpm2.target"];
+              wantedBy = ["multi-user.target"];
+              wants = ["tpm2.target"];
+              enableStrictShellChecks = true;
+              script = ''
+                echo "Removing temporary TPM2 token"
+
+                systemd-cryptenroll \
+                  --unlock-tpm2-device=auto \
+                  --tpm2-device=auto \
+                  --wipe-slot=tpm2 \
+                  ${toString config.extraTpm2EnrollArgs} \
+                  "${config.device}"
+
+                  echo "TPM2 finalization complete"
+              '';
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+              };
+            };
           }
         ])
         ++ (lib.optional (config.content != null) config.content._config);
