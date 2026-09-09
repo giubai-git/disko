@@ -384,9 +384,6 @@ in
               after = ["tpm2.target"];
               wantedBy = ["multi-user.target"];
               wants = ["tpm2.target"];
-              path = [
-                pkgs.systemd
-              ];
               enableStrictShellChecks = true;
               script = ''
                 echo "Removing temporary TPM2 token"
