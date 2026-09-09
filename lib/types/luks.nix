@@ -377,7 +377,7 @@ in
             boot.initrd.systemd.enable = lib.mkIf (config.enrollFido2 || config.enrollTpm2) true;
           }
         ])
-        ++ (lib.optional config.extraTpm2EnrollArgs [
+        ++ (lib.optional config.enrollTpm2 [
           {
             systemd.services."disko-tpm2-enroll-${config.name}" = {
               description = "Finalize TPM2 unlock key for ${config.name}";
