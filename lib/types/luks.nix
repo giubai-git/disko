@@ -317,9 +317,7 @@ in
           if ! systemd-cryptenroll "${config.device}" 2>/dev/null | grep -qw tpm2; then
             systemd-cryptenroll \
               --tpm2-device=auto \
-              --wipe-slot=''${SLOT_ZERO_TO_DELETE:+0,}tpm2 \
               --unlock-key-file=${formatKeyFile} \
-              ${toString config.extraTpm2EnrollArgs} \
               "${config.device}"
           fi
         ''}
@@ -379,13 +377,16 @@ in
             boot.initrd.systemd.enable = lib.mkIf (config.enrollFido2 || config.enrollTpm2) true;
           }
         ])
-        ++ (lib.optional config.enrollTpm2 [
+        ++ (lib.optional config.extraTpm2EnrollArgs [
           {
             systemd.services."disko-tpm2-enroll-${config.name}" = {
               description = "Finalize TPM2 unlock key for ${config.name}";
               after = ["tpm2.target"];
               wantedBy = ["multi-user.target"];
               wants = ["tpm2.target"];
+              path = [
+                pkgs.systemd
+              ];
               enableStrictShellChecks = true;
               script = ''
                 echo "Removing temporary TPM2 token"
